@@ -28,6 +28,10 @@ library(DHARMa)
 options(scipen=999)
 set.seed(654)
 
+#################################################################
+##### DATA PREPARATION
+#################################################################
+
 ## open FragSAD dataset available at https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/ecy.2861
 ## .csv data and metadata provided for convenience
 ## open FragSAD dataset based on Chase et al. 2020 Nature
@@ -38,8 +42,12 @@ metadata$dataset_id <- as.factor(metadata$dataset_id)
 data$dataset_label <- as.factor(data$dataset_label)
 
 # open metadata from original paper, including effort
-#metadata_original = fread("C:\\Users\\feder\\OneDrive\\Desktop\\Riva Fahrig SLOSS #2\\data\\FragSAD_metadata_original.csv", header = TRUE)
- 
+metadata_original = fread("C:\\Users\\feder\\OneDrive\\Desktop\\Riva Fahrig SLOSS #2\\data\\FragSAD_metadata_original.csv", header = TRUE)
+
+### 
+### INSPECTION OF PREDICTS DATASETS; NOT NECESSARY, KEEP FOR NOW
+###
+
 # # open metadata PREDICTS, for effort measures of six studies not in FragSAD
 # metadata_PREDICTS = fread("C:\\Users\\feder\\OneDrive\\Desktop\\landscape empirical comparisons\\PREDICTS 2016\\database\\sites.csv", header = TRUE)
 # 
@@ -48,13 +56,13 @@ data$dataset_label <- as.factor(data$dataset_label)
 # PREDICTS_studies <- (setdiff(levels(as.factor(data$dataset_label)), levels(as.factor(metadata_original$refshort))))
 # 
 # # inspect the PREDICTS studies for effort
-# PREDICTS_studies_Source_ID <- c("JD1_2010__Caceres", 
+# PREDICTS_studies_Source_ID <- c("JD1_2010__Caceres",
 #                                 "CC1_2007__Ewers",
 #                                 "SC1_2013__Fernandez", # two datasets in one study, urban and rural fragments for micromammals
 #                                 "HZ1_2013__Garmendia",
 #                                 "SC1_2011__Stouffer")
 # metadata_PREDICTS <- metadata_PREDICTS[metadata_PREDICTS$Source_ID %in% PREDICTS_studies_Source_ID]
-# metadata_PREDICTS <- subset(metadata_PREDICTS, Study_name !="Chilean plants") # remove dataset based on presence/absence data 
+# metadata_PREDICTS <- subset(metadata_PREDICTS, Study_name !="Chilean plants") # remove dataset based on presence/absence data
 # metadata_PREDICTS[283:288, 1] <- "SC1_2013__Fernandez_a" # Chase et al split the original Fernandez dataset in two because patches were sampled in different environments
 # metadata_PREDICTS <- metadata_PREDICTS[, c(1, 16, 26, 27, 28)]
 # metadata_PREDICTS$area_ha <- metadata_PREDICTS$Habitat_patch_area_square_metres/10000
@@ -62,8 +70,7 @@ data$dataset_label <- as.factor(data$dataset_label)
 # ## check the patches included in Chase et al.
 # test_patches <- unique(data[, 1:3])
 
-
-#data$frag_id <- as.factor(data$frag_id)
+# open table compiled by FR while re-assessing the papers
 papers_reassessment = fread("C:\\Users\\feder\\OneDrive\\Desktop\\Riva Fahrig SLOSS #2\\data\\papers_reassessment.csv", header = TRUE)
 papers_reassessment_filter <- papers_reassessment[,c(2,3)]
 
@@ -74,7 +81,7 @@ data <- subset(data, data$frag_size_char != 'continuous')
 data <- merge(data, papers_reassessment_filter, by = 'dataset_label')
 data <- subset(data, data$included == 1) 
 
-## remove patches with patch size assigned arbitrarily or with patch size larger than 90% of the total HA; see "paper_reassessment"
+## remove patches with patch size assigned arbitrarily or with patch size larger than 90% of the total Habitat amount (8 patches); see "paper_reassessment"
 ## unless otherwise stated, removed only arbitrary sized large patches
 ## datasets where inspected by FR
 data <- data[!(data$dataset_label == "Almeida-Gomes_2014" & data$frag_size_num > 7000),]  
@@ -92,30 +99,16 @@ data <- data[!(data$dataset_label == "Gavish_2012_b" & data$frag_size_num > 100)
 data <- data[!(data$dataset_label == "Gavish_2012_c" & data$frag_size_num > 100),] 
 data <- data[!(data$dataset_label == "Giladi_2011_a" & data$frag_size_num > 100),] 
 data <- data[!(data$dataset_label == "Giladi_2011_c" & data$frag_size_num > 100),] 
-#data <- data[!(data$dataset_label == "Giladi_2011_b" & data$frag_size_num > 35),] 
 data <- data[!(data$dataset_label == "Jung_2014" & data$frag_size_num > 999),] 
-#data <- data[!(data$dataset_label == "Lima_2015" & data$frag_size_num > 800),] 
 data <- data[!(data$dataset_label == "Manu_2007" & data$frag_size_num > 500),] 
-#data <- data[!(data$dataset_label == "Montgomery_2014" & data$frag_size_num > 3000),] 
 data <- data[!(data$dataset_label == "Nogueira_2016" & data$frag_size_num > 200),] 
-#data <- data[!(data$dataset_label == "Nyeko_2009" & data$frag_size_num > 200),] 
-#data <- data[!(data$dataset_label == "Owen_2008" & data$frag_size_num > 200),] 
-#data <- data[!(data$dataset_label == "Raheem_2009" & data$frag_size_num > 15000),] 
-#data <- data[!(data$dataset_label == "Silva_2009" & data$frag_size_num > 999),] 
-#data <- data[!(data$dataset_label == "Slade_2013" & data$frag_size_num > 100),] 
 data <- data[!(data$dataset_label == "Struebig_2008" & data$frag_size_num > 15000),] 
-#data <- data[!(data$dataset_label == "Vulinec_2008" & data$frag_size_num > 70),] 
 data <- data[!(data$dataset_label == "Vasconcelos_2006" & data$frag_size_num > 999),] 
-#data <- data[!(data$dataset_label == "Brosi_2008" & data$frag_size_num > 200),] 
-#data <- data[!(data$dataset_label == "Lambert_2003" & data$frag_size_num > 300),] 
 data <- data[!(data$dataset_label == "Savilaakso_2009" & data$frag_size_num > 250),] 
-#data <- data[!(data$dataset_label == "Wang_2012" & data$frag_size_num > 999),] 
-#data <- data[!(data$dataset_label == "Kapoor_2008" & data$frag_size_num > 1999),] 
-
-
 
 ## remove site filtering column
 data <- data[,-c(10)]
+
 ## label as factor
 data$dataset_label <- as.factor(data$dataset_label)
 
@@ -138,7 +131,7 @@ for (i in 1 : 76){list_individuals[[i]] <- subset(individuals,dataset_label == l
 for (i in 1 : 76){if (min(list_individuals[[i]]$abundance) < 1) {list_individuals[[i]]$abundance <- (list_individuals[[i]]$abundance * 100)}}  
 individuals <- do.call(rbind.data.frame, list_individuals)
 
-### number of individuals sampled in each patch
+### number of individuals sampled in each study, in each patch, and total patch area sampled in each study
 study_individuals <- aggregate(abundance ~ dataset_label, data=individuals, FUN=sum)
 patch_individuals <- aggregate(abundance ~ study_and_patch, data=individuals, FUN=sum)
 study_total_area <- aggregate(frag_size_num ~ dataset_label, data=patches, FUN=sum)
@@ -150,13 +143,25 @@ patch_individuals$total_abundance <- study_individuals$abundance[match(patch_ind
 patch_individuals$patch_area <- patches$frag_size_num[match(patch_individuals$study_and_patch,patches$study_and_patch)]
 patch_individuals$total_patch_area <- study_total_area$frag_size_num[match(patch_individuals$dataset_label,study_total_area$dataset_label)]
 
+#################################################################
+##### CALCULATE SAMPLING EFFORT PER PATCH
+#################################################################
 
-# sampling effort per patch
-# divide based on sample design
+# create a new column to split into list based on sample design
+# "sample_id" was "plot_id" in FragSAD, defined as "plot_id: Plot-identifier of a sampling plot or a transect. If only one plot per site, 1 is given." in supplementary information
+# note that in Owen_2008 the sample_id do not start from 1 in every patch
 data$unique_sampling_event <- as.factor(paste(data$study_and_patch, data$sample_id))
+
+# retain the effort (column 6), study_and_patch (column 10), and also the sampling event (column 11, created one line of code above) 
 data_sampling_effort <- data[, c(6,10,11)]
-data_sampling_effort <- unique(data_sampling_effort)
-data_sampling_effort <- aggregate(sample_eff ~ study_and_patch, data = data_sampling_effort, FUN=sum)
+
+# unique, because every sampling (column 11) event has the same effort (column 6)
+data_sampling_effort <- unique(data_sampling_effort) # 1475 sampling events for 1222 patches, some have been sampled multiple times
+
+# sum the total effort put in every patch
+data_sampling_effort <- aggregate(sample_eff ~ study_and_patch, data = data_sampling_effort, FUN=sum) # by aggregating, we have a sum of the sampling events
+
+# add a dataset_label from original data
 data_sampling_effort$dataset_label <- data$dataset_label[match(data_sampling_effort$study_and_patch, data$study_and_patch)]
 
 # transform sampling effort in values between 0 and 1, where 1 is the maximum sampling effort observed in a dataset
@@ -167,49 +172,52 @@ for (i in 1: length(data_sampling_effort)) {
 
 data_sampling_effort <- do.call(rbind.data.frame, data_sampling_effort)
 
+# match the relative sampling effort with information on every patch
 patch_individuals$sampling_effort <- data_sampling_effort$sample_eff[match(patch_individuals$study_and_patch, data_sampling_effort$study_and_patch)]
+# the number of individuals expected if all patches were sampled with the same effort
 patch_individuals$abundance_per_effort <- patch_individuals$abundance / patch_individuals$sampling_effort
 
+
+# calculate normalized # of individuals adjusted (i.e., at equal sampling effort) per patch 
 patch_individuals <- split(patch_individuals, patch_individuals$dataset_label)
 for (i in 1:length(patch_individuals)) {
   patch_individuals[[i]]$normalized_individuals_per_sampl_unit <- patch_individuals[[i]]$abundance_per_effort / max(patch_individuals[[i]]$abundance_per_effort)
 }
 
-
 patch_individuals <- do.call(rbind.data.frame, patch_individuals)
 
-
+# normalized_individuals_per_sampl_unit2 is a transformation to avoind values equal to 1 or zero; necessary to fit beta regression
+# transformation follows Smithson, M., & Verkuilen, J. (2006). A better lemon squeezer? Maximum-likelihood regression with beta-distributed dependent variables. Psychological Methods, 11(1), 54–71.
 patch_individuals$normalized_individuals_per_sampl_unit2 <- (patch_individuals$normalized_individuals_per_sampl_unit * (nrow(patch_individuals)-1) + 0.5) / nrow(patch_individuals)
 patch_individuals$log_patch_size <- log(patch_individuals$patch_area)
 
-# c.lfs + (c.lfs | dataset_label) if we follow Chase et al. structure
+# c.lfs + (c.lfs | dataset_label)  we followed Chase et al. 2020 model structure
 model <- glmmTMB(normalized_individuals_per_sampl_unit2 ~ log_patch_size  +  
                     (log_patch_size|dataset_label), 
-                  data = patch_individuals, family=beta_family(link="logit")) #family = "gaussian")#
+                  data = patch_individuals, family = "gaussian") #family=beta_family(link="logit")) ##
  
 summary(model)
 AIC(model)
-#plot(allEffects(model), type = "response")
-#plot(predict(model, type = "response"), patch_individuals$normalized_individuals_per_sampl_unit2)
+
 
 patch_individuals$predicted_normalized_individuals <- predict(model, type = "response")
+
+# strong effect of dataset random effect
 plot(patch_individuals$predicted_normalized_individuals ~ patch_individuals$dataset_label)
-# study-level estimates
-# for (i in 1: length(patch_individuals)) {
-#   patch_individuals[[i]]$predicted_rel_abundance_patch_size <- predict(lm(patch_individuals[[i]]$abundance_per_effort ~ patch_individuals[[i]]$patch_area))/ max(predict(lm(patch_individuals[[i]]$abundance_per_effort ~ patch_individuals[[i]]$patch_area)))
-# }
 
+# some datasets have a positive area effect, some have a negative patch area effect
+plot(predict(model, type = "response"), patch_individuals$log_patch_size)
 
+# relationship between model predictions and observed number of individuals per sampling unit (normalized to a value between 0 and 1)
+plot(predict(model, type = "response"), patch_individuals$normalized_individuals_per_sampl_unit2)
 
-
-# add sampling effort to 
-
-# # reorder dataframe columns
-# patch_individuals <- patch_individuals[c(3,4,1,6,7,2,5)]
+#################################################################
+##### CALCULATE INDIVIDUALS PER RANDOMIZATIONS
+#################################################################
 
 # calculate the proportion of individuals per patch
 patch_individuals$abundance_per_ha <- patch_individuals$abundance / patch_individuals$patch_area
-patch_individuals$relative_patch_size <- patch_individuals$patch_area / patch_individuals$total_patch_area
+patch_individuals$relative_patch_size <- patch_individuals$patch_area / patch_individuals$total_patch_area 
 # calculate the minimum to define the # of individuals simulated 
 min_abundance_per_ha_study <- aggregate(abundance_per_ha ~ dataset_label, data=patch_individuals, FUN=min)
 colnames(min_abundance_per_ha_study)[2] <- "min_abundance_per_ha_study"
@@ -217,16 +225,22 @@ colnames(min_abundance_per_ha_study)[2] <- "min_abundance_per_ha_study"
 # merge with patch-level information
 patch_individuals <- merge(patch_individuals, min_abundance_per_ha_study, by = 'dataset_label')
 patch_individuals$simulation_constant_abundance <- patch_individuals$min_abundance_per_ha_study * patch_individuals$patch_area
+#patch_individuals$simulations_adjusted_abundance <- patch_individuals$simulation_constant_abundance * patch_individuals$predicted_normalized_individuals
 
-patch_individuals$simulations_adjusted_abundance <- patch_individuals$simulation_constant_abundance * patch_individuals$predicted_normalized_individuals
+# increase the number of individuals to be resampled in each dataset by standardizing the predictions within each dataset
+patch_individuals <- split(patch_individuals, patch_individuals$dataset_label)
+for (i in 1:length(patch_individuals)) {
+  patch_individuals[[i]]$predicted_normalized_individuals_adjusted <- patch_individuals[[i]]$predicted_normalized_individuals / max(patch_individuals[[i]]$predicted_normalized_individuals)
+}
+patch_individuals <- do.call(rbind.data.frame, patch_individuals)
 
-# sum(patch_individuals$simulation_constant_abundance < 1)
-# 162 patches out of 1186 have a number of individuals sampled < 1, 491 < 10, 964 < 100
-
-# study_info <- merge(study_individuals, study_total_area,  by = 'dataset_label')
-# study_info <- merge(study_info, min_abundance_per_ha_study,  by = 'dataset_label')
+patch_individuals$simulations_adjusted_abundance <- patch_individuals$simulation_constant_abundance * patch_individuals$predicted_normalized_individuals_adjusted
 
 
+
+#################################################################
+##### SIMULATE 100 TIMES THE NUMBER OF INDIVIDUALS TO BE RESAMPLED IN EACH PATCH
+#################################################################
 
 # create lists where each study is one element of a list
 list_patches <- list()
@@ -234,9 +248,6 @@ for (i in 1 : 76){list_patches[[i]] <- subset(patches,dataset_label == levels(da
 
 list_assemblages <- list()
 for (i in 1 : 76){list_assemblages[[i]] <- subset(assemblages,dataset_label == levels(data$dataset_label)[i] )}
-
-# # subset and inspect lists with values < 1
-# list_assemblages_min_one <- subset(list_assemblages, min(abundance)<1)
 
 # if the smallest value of a list is < 1, multiply all the abundances of the species recorded as relative occurrences for 100 
 # so that rows can be created proportionally to their incidence
@@ -246,39 +257,27 @@ for (i in 1 : 76){if (min(list_assemblages[[i]]$abundance) < 1) {list_assemblage
 for (i in 1 : 76) {list_assemblages[[i]] <- splitstackshape::expandRows(list_assemblages[[i]], "abundance") }
 list_assemblages2 <- rbindlist(list_assemblages)
 
-# pryr::object_size(list_assemblages2)
-# pryr::mem_used()
-
+# list of all species seen in all patches in the original datasets
 list_assemblages_patches <- list()
 for (i in 1 : nlevels(list_assemblages2$study_and_patch)) {list_assemblages_patches[[i]] <-  subset(list_assemblages2,study_and_patch == levels(list_assemblages2$study_and_patch)[i] )}
 
 
 ### create 100 number of individuals sampled per patch
-###
 list_sim_individuals <- list()
 
-# constant number
 for (i in 1 : nrow(patch_individuals)){
-  list_sim_individuals[[i]] <- replicate(100, (floor(patch_individuals$simulation_constant_abundance[[i]]) + rbinom(1, 1,(patch_individuals$simulation_constant_abundance[[i]] - floor(patch_individuals$simulation_constant_abundance[[i]])))))
+  list_sim_individuals[[i]] <- replicate(100, (floor(patch_individuals$simulations_adjusted_abundance[[i]]) + rbinom(1, 1,(patch_individuals$simulations_adjusted_abundance[[i]] - floor(patch_individuals$simulations_adjusted_abundance[[i]])))))
 }
+## these are the numbers of individuals that will be selected in each patch; 100 randomizations
 
 
-################################################################
-################################################################
-################################################################
-
-
-# # number based on abudnance model
-# for (i in 1 : nrow(patch_individuals)){
-#   list_sim_individuals[[i]] <- replicate(100, (floor(patch_individuals$simulations_adjusted_abundance[[i]]) + rbinom(1, 1,(patch_individuals$simulations_adjusted_abundance[[i]] - floor(patch_individuals$simulations_adjusted_abundance[[i]])))))
-# }
 
 ################################################################
-################################################################
+####### create randomized tables
 ################################################################
 
 sim_ind <- do.call(rbind.data.frame, list_sim_individuals)
-min(rowSums(sim_ind)) # every patch as at least one scenario with one individual sampled
+min(rowSums(sim_ind)) 
 hist(log10(rowSums(sim_ind)))
 
 ## TEST IF SIMULATIONS ARE CORRECT: check if simulations are bigger than the number of individuals observed in a patch
@@ -326,6 +325,9 @@ for (i in 1:100){
 }
 
 
+
+
+
 # convert from a series of rows each representing a sampled individuals, into a vectors of abundances per patch
 # when a patch has zero simulated individuals, this still create a column that I will remove later to avoid losing the patch from the dataset
 for (i in 1:length(list_sampled_data)){
@@ -355,7 +357,7 @@ to_table <- function(list_to_table) {
   list_to_table <- table_prova
 }
 
-# make each list (100 simulations per 75 studies) into a table of species per sites
+# make each list (100 simulations per 76 studies) into a table of species per sites
 for (i in 1:length(list_sampled_data)){
   for (j in 1: length(list_sampled_data[[i]])){
     list_sampled_data[[i]][[j]] <- to_table(list_sampled_data[[i]][[j]]) #rbindlist(lapply(list_sampled_data[[i]][[j]], function(x) as.data.frame.list(x)), fill=TRUE)
@@ -388,23 +390,22 @@ for (i in 1:length(list_sampled_data)){
   }
 }
 
-####################################################################################
-####################################################################################
 
 ####################################################################################
+######### SIMULATE SETS OF PATCHES OF EQUAL HABITAT AMOUNTS
 ####################################################################################
 
-#
+
 
 SETS_PATCHES <- function(db, percent) {  # db= dataset, percent = habitat amount
   
-  
-  if (nrow(db) < 10) {
-    n_db <- 100 # 200 simulations when the number of patches in a dataset is < 10
-  } else {
-    n_db <- 100 # 200 simulations when the number of patches in a dataset is > 10
-  }
-  
+  set.seed(111)
+  # if (nrow(db) < 10) {
+  #   n_db <- 100 # 200 simulations when the number of patches in a dataset is < 10
+  # } else {
+  #   n_db <- 100 # 200 simulations when the number of patches in a dataset is > 10
+  # }
+  n_db <- 100
   # total habitat amount 
   target_area <- sum(db$frag_size_num) * percent
   
@@ -445,39 +446,57 @@ SETS_PATCHES <- function(db, percent) {  # db= dataset, percent = habitat amount
   # list_area
 }
 
-SETS_PATCHES(list_patches[[1]], 0.3)
+#SETS_PATCHES(list_patches[[1]], 0.3)
 
 
 
 #
-#tryCatch puts NAs when error in the function (i.e., when the function cannot find)
+#tryCatch puts NAs when error in the function (i.e., when the function cannot find sets of patches)
+list_simulations_ten <- vector("list",length(list_patches))
+for (i in 1:length(list_patches)) {list_simulations_ten[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.1), error=function(e) print(NA))}
 
 list_simulations_twenty <- vector("list",length(list_patches))
 for (i in 1:length(list_patches)) {list_simulations_twenty[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.2), error=function(e) print(NA))}
 
+list_simulations_thirty <- vector("list",length(list_patches))
+for (i in 1:length(list_patches)) {list_simulations_thirty[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.3), error=function(e) print(NA))}
+
 list_simulations_forty <- vector("list",length(list_patches))
 for (i in 1:length(list_patches)) {list_simulations_forty[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.4), error=function(e) print(NA))}
+
+list_simulations_fifty <- vector("list",length(list_patches))
+for (i in 1:length(list_patches)) {list_simulations_fifty[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.5), error=function(e) print(NA))}
 
 list_simulations_sixty <- vector("list",length(list_patches))
 for (i in 1:length(list_patches)) {list_simulations_sixty[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.6), error=function(e) print(NA))}
 
+list_simulations_seventy <- vector("list",length(list_patches))
+for (i in 1:length(list_patches)) {list_simulations_seventy[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.7), error=function(e) print(NA))}
+
 list_simulations_eighty <- vector("list",length(list_patches))
 for (i in 1:length(list_patches)) {list_simulations_eighty[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.8), error=function(e) print(NA))}
 
+list_simulations_ninety <- vector("list",length(list_patches))
+for (i in 1:length(list_patches)) {list_simulations_ninety[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.9), error=function(e) print(NA))}
 
-list_simulations <- list(list_simulations_twenty,
+
+list_simulations <- list(list_simulations_ten,
+                         list_simulations_twenty,
+                         list_simulations_thirty,
                          list_simulations_forty,
+                         list_simulations_fifty,
                          list_simulations_sixty,
-                         list_simulations_eighty)
+                         list_simulations_seventy,
+                         list_simulations_eighty,
+                         list_simulations_ninety)
 
 
 
 ##
 ########################################################################################################
 ########################################################################################################
-object <- list_simulations_twenty
 
-FINAL_FUNCTION <-function(object){ # object is one of the lists from SETS_PATCHES
+alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
   
   LIST_SIM <- list()
   for (i in 1:100) {LIST_SIM[[i]] <- object}
@@ -629,14 +648,15 @@ FINAL_FUNCTION <-function(object){ # object is one of the lists from SETS_PATCHE
   LIST_SIM_combined <- do.call(rbind, LIST_SIM_combined)
   LIST_SIM_combined <- na.omit(LIST_SIM_combined)
   
-  final_twenty <- LIST_SIM_combined
+  final <- LIST_SIM_combined
+  #final_twenty <- LIST_SIM_combined
 } # end of the function
 
 
-final_twenty <- FINAL_FUNCTION(list_simulations_twenty)
-final_forty <- FINAL_FUNCTION(list_simulations_forty)
-final_sixty <- FINAL_FUNCTION(list_simulations_sixty)
-final_eighty <- FINAL_FUNCTION(list_simulations_eighty)
+final_twenty <- alpha_set(list_simulations_twenty)
+final_forty <- alpha_set(list_simulations_forty)
+final_sixty <- alpha_set(list_simulations_sixty)
+final_eighty <- alpha_set(list_simulations_eighty)
 
 #
 final_twenty$habitat_amount <- rep("twenty_percent", nrow(final_twenty))
@@ -644,14 +664,16 @@ final_forty$habitat_amount <- rep("forty_percent", nrow(final_forty))
 final_sixty$habitat_amount <- rep("sixty_percent", nrow(final_sixty))
 final_eighty$habitat_amount <- rep("eighty_percent", nrow(final_eighty))
 
-table_analysis <- rbind(final_twenty, final_forty, final_sixty, final_eighty)
+table_analysis <- rbind(final_twenty, 
+                        final_forty, 
+                        final_sixty, 
+                        final_eighty)
 colnames(table_analysis)[5] <- "dataset_id"
 table_analysis <- merge(table_analysis, metadata, by = "dataset_id")
 
 ##
-## add a set of patches random effect for the same simulated sets of patches
 ##
-#
+
 
 library(glmmTMB)
 library(effects)
