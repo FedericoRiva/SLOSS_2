@@ -2,8 +2,8 @@
 # Ecosystem decay across sets of patches
 #
 # prepare data
-library(data.table)
 library(tidyr)
+library(data.table)
 library(dplyr)
 library(purrr)
 library(rlist)
@@ -194,8 +194,8 @@ patch_individuals$log_patch_size <- log(patch_individuals$patch_area)
 # c.lfs + (c.lfs | dataset_label)  we followed Chase et al. 2020 model structure
 model <- glmmTMB(normalized_individuals_per_sampl_unit2 ~ log_patch_size  +  
                     (log_patch_size|dataset_label), 
-                  data = patch_individuals, family = "gaussian") #family=beta_family(link="logit")) ##
- 
+                  data = patch_individuals, family = "gaussian")## family=beta_family(link="logit")) ## 
+                  # gaussian distributio ndoes a better job than beta distribution 
 summary(model)
 AIC(model)
 
@@ -210,7 +210,7 @@ plot(predict(model, type = "response"), patch_individuals$log_patch_size)
 
 # relationship between model predictions and observed number of individuals per sampling unit (normalized to a value between 0 and 1)
 plot(predict(model, type = "response"), patch_individuals$normalized_individuals_per_sampl_unit2)
-
+abline(0, 1, col = "red")
 #################################################################
 ##### CALCULATE INDIVIDUALS PER RANDOMIZATIONS
 #################################################################
@@ -277,7 +277,6 @@ for (i in 1 : nrow(patch_individuals)){
 ################################################################
 
 sim_ind <- do.call(rbind.data.frame, list_sim_individuals)
-min(rowSums(sim_ind)) 
 hist(log10(rowSums(sim_ind)))
 
 ## TEST IF SIMULATIONS ARE CORRECT: check if simulations are bigger than the number of individuals observed in a patch
@@ -452,8 +451,8 @@ SETS_PATCHES <- function(db, percent) {  # db= dataset, percent = habitat amount
 
 #
 #tryCatch puts NAs when error in the function (i.e., when the function cannot find sets of patches)
-list_simulations_ten <- vector("list",length(list_patches))
-for (i in 1:length(list_patches)) {list_simulations_ten[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.1), error=function(e) print(NA))}
+# list_simulations_ten <- vector("list",length(list_patches))
+# for (i in 1:length(list_patches)) {list_simulations_ten[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.1), error=function(e) print(NA))}
 
 list_simulations_twenty <- vector("list",length(list_patches))
 for (i in 1:length(list_patches)) {list_simulations_twenty[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.2), error=function(e) print(NA))}
@@ -463,13 +462,13 @@ for (i in 1:length(list_patches)) {list_simulations_thirty[[i]] <- tryCatch(SETS
 
 list_simulations_forty <- vector("list",length(list_patches))
 for (i in 1:length(list_patches)) {list_simulations_forty[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.4), error=function(e) print(NA))}
-
+ 
 list_simulations_fifty <- vector("list",length(list_patches))
 for (i in 1:length(list_patches)) {list_simulations_fifty[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.5), error=function(e) print(NA))}
 
 list_simulations_sixty <- vector("list",length(list_patches))
 for (i in 1:length(list_patches)) {list_simulations_sixty[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.6), error=function(e) print(NA))}
-
+ 
 list_simulations_seventy <- vector("list",length(list_patches))
 for (i in 1:length(list_patches)) {list_simulations_seventy[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.7), error=function(e) print(NA))}
 
@@ -480,21 +479,33 @@ list_simulations_ninety <- vector("list",length(list_patches))
 for (i in 1:length(list_patches)) {list_simulations_ninety[[i]] <- tryCatch(SETS_PATCHES(list_patches[[i]], 0.9), error=function(e) print(NA))}
 
 
-list_simulations <- list(list_simulations_ten,
-                         list_simulations_twenty,
-                         list_simulations_thirty,
-                         list_simulations_forty,
-                         list_simulations_fifty,
-                         list_simulations_sixty,
-                         list_simulations_seventy,
-                         list_simulations_eighty,
-                         list_simulations_ninety)
+# list_simulations <- list(#list_simulations_ten,
+#                          list_simulations_twenty,
+#                          #list_simulations_thirty,
+#                          list_simulations_forty,
+#                          #list_simulations_fifty,
+#                          list_simulations_sixty,
+#                          #list_simulations_seventy,
+#                          list_simulations_eighty) #,
+#                          #list_simulations_ninety)
 
 
 
-##
+
 ########################################################################################################
 ########################################################################################################
+# open IUCN declining species
+IUCN_declining = fread("C:\\Users\\feder\\OneDrive\\Desktop\\Riva Fahrig SLOSS #2\\data\\IUCN_simple_summary.csv", header = TRUE)
+IUCN_declining <- subset(IUCN_declining, scientificName %in% data$species)
+
+table((as.factor(IUCN_declining$className)))
+
+IUCN_declining <- IUCN_declining$scientificName
+IUCN_declining <- gsub(" ", ".", IUCN_declining)
+
+########################################################################################################
+########################################################################################################
+
 
 alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
   
@@ -521,8 +532,6 @@ alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
     }
   }
   
-  
-  
   # calculate the average patch areas in each set of patches
   LIST_SIM_area <- LIST_SIM
   
@@ -541,6 +550,24 @@ alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
   }
   # warnings appears because every list has more than one element, so the !is.na returns multiple TRUE statements when a list is not NA
   
+  #calculate the sum of all patch areas within a set of patches
+  LIST_SIM_area_sum <- LIST_SIM
+  
+  for (i in 1: length(LIST_SIM_area_sum)) {
+    for (j in 1: length(LIST_SIM_area_sum[[i]])) {
+      for (k in 1: length(LIST_SIM_area_sum[[i]][[j]])){
+        
+        if (!is.na(LIST_SIM_area_sum[[i]][[j]])) {
+          
+          LIST_SIM_area_sum[[i]][[j]][[k]] <- sum(LIST_SIM_area_sum[[i]][[j]][[k]][,ncol(LIST_SIM_area_sum[[i]][[j]][[k]])])
+          
+        } 
+        
+      }
+    }
+  }
+  
+  
   # transform lists into tabels
   for (i in 1:length(LIST_SIM_area)){
     for ( j in 1: length(LIST_SIM_area[[i]])) {
@@ -552,25 +579,48 @@ alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
     }
   }
   
-  
-  
-  # calculate the species richness in each patch
-  LIST_SIM_richness <- LIST_SIM
-
-  for (i in 1: length(LIST_SIM_richness)) {
-    for (j in 1: length(LIST_SIM_richness[[i]])) {
-      for (k in 1: length(LIST_SIM_richness[[i]][[j]])){
-
-        if (!is.na(LIST_SIM_richness[[i]][[j]])) {
-          # take the column of each table from column two to column n-1, take their sum, and count how many times their colsum is larger than 0
-          LIST_SIM_richness[[i]][[j]][[k]] <- sum(colSums(LIST_SIM_richness[[i]][[j]][[k]][,2: (ncol(LIST_SIM_richness[[i]][[j]][[k]])-1)]) > 0)
-        }
-
+  for (i in 1:length(LIST_SIM_area_sum)){
+    for ( j in 1: length(LIST_SIM_area_sum[[i]])) {
+      
+      if (!is.na(LIST_SIM_area_sum[[i]][[j]])) {
+        LIST_SIM_area_sum[[i]][[j]] <- do.call(rbind.data.frame, LIST_SIM_area_sum[[i]][[j]])
+        colnames(LIST_SIM_area_sum[[i]][[j]]) <- "total_patch_area"
       }
     }
   }
   
+  # scale areas
+  LIST_SIM_area_scaled <- LIST_SIM_area
   
+  for (i in 1:length(LIST_SIM_area_scaled)){
+    for ( j in 1: length(LIST_SIM_area_scaled[[i]])) {
+      
+      if (!is.na(LIST_SIM_area_scaled[[i]][[j]])) {
+        
+        if (var(LIST_SIM_area_scaled[[i]][[j]]$mean_patch_area) == 0) {
+          LIST_SIM_area_scaled[[i]][[j]]$mean_patch_area_sc <- rep(0, length(LIST_SIM_area_scaled[[i]][[j]]$mean_patch_area))
+        } else {
+          LIST_SIM_area_scaled[[i]][[j]]$mean_patch_area_sc <- ((LIST_SIM_area_scaled[[i]][[j]]$mean_patch_area - mean(LIST_SIM_area_scaled[[i]][[j]]$mean_patch_area))/sd(LIST_SIM_area_scaled[[i]][[j]]$mean_patch_area))
+        }
+      }
+    }
+  }
+  
+  # calculate species richness in each patch
+  LIST_SIM_richness <- LIST_SIM
+  
+  for (i in 1: length(LIST_SIM_richness)) {
+    for (j in 1: length(LIST_SIM_richness[[i]])) {
+      for (k in 1: length(LIST_SIM_richness[[i]][[j]])){
+        
+        if (!is.na(LIST_SIM_richness[[i]][[j]])) {
+          # take the column of each table from column two to column n-1, take their sum, and count how many times their colsum is larger than 0
+          LIST_SIM_richness[[i]][[j]][[k]] <- sum(colSums(LIST_SIM_richness[[i]][[j]][[k]][,2: (ncol(LIST_SIM_richness[[i]][[j]][[k]])-1)]) > 0)
+        }
+        
+      }
+    }
+  }
   
   
   for (i in 1:length(LIST_SIM_richness)){
@@ -582,9 +632,6 @@ alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
       }
     }
   }
-  
-  
-  
   
   
   # calculate evenness in each patch
@@ -616,17 +663,169 @@ alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
   }
   
   
+  ## scale richness 
+  LIST_SIM_richness_scaled <- LIST_SIM_richness
+  
+  for (i in 1:length(LIST_SIM_richness_scaled)){
+    for ( j in 1: length(LIST_SIM_richness_scaled[[i]])) {
+      
+      if (!is.na(LIST_SIM_richness_scaled[[i]][[j]])) {
+        
+        if (var(LIST_SIM_richness_scaled[[i]][[j]]$richness) == 0) {
+          LIST_SIM_richness_scaled[[i]][[j]]$richness <- rep(0, length(LIST_SIM_richness_scaled[[i]][[j]]$richness))
+        } else {
+          LIST_SIM_richness_scaled[[i]][[j]]$richness <- ((LIST_SIM_richness_scaled[[i]][[j]]$richness - mean(LIST_SIM_richness_scaled[[i]][[j]]$richness))/sd(LIST_SIM_richness_scaled[[i]][[j]]$richness))
+        }
+      }
+    }
+  }
   
   
+  ## scale evenness
+  LIST_SIM_evenness_scaled <- LIST_SIM_evenness
+  
+  for (i in 1:length(LIST_SIM_evenness_scaled)){
+    for ( j in 1: length(LIST_SIM_evenness_scaled[[i]])) {
+      
+      if (!is.na(LIST_SIM_evenness_scaled[[i]][[j]])) {
+        
+        if (var(LIST_SIM_evenness_scaled[[i]][[j]]$evenness) == 0) {
+          LIST_SIM_evenness_scaled[[i]][[j]]$evenness <- rep(0, length(LIST_SIM_evenness_scaled[[i]][[j]]$evenness))
+        } else {
+          LIST_SIM_evenness_scaled[[i]][[j]]$evenness <- ((LIST_SIM_evenness_scaled[[i]][[j]]$evenness - mean(LIST_SIM_evenness_scaled[[i]][[j]]$evenness))/sd(LIST_SIM_evenness_scaled[[i]][[j]]$evenness))
+        }
+      }
+    }
+  }
+  
+  
+  # subset IUCN species
+  LIST_SIM_IUCN <- LIST_SIM
+  
+  for (i in 1: length(LIST_SIM_IUCN)) {
+    for (j in 1: length(LIST_SIM_IUCN[[i]])) {
+      for (k in 1: length(LIST_SIM_IUCN[[i]][[j]])){
+        
+        if (!is.na(LIST_SIM_IUCN[[i]][[j]])) {
+          # subset only IUCN declining species
+          LIST_SIM_IUCN[[i]][[j]][[k]] <- LIST_SIM_IUCN[[i]][[j]][[k]][,(names(LIST_SIM_IUCN[[i]][[j]][[k]]) %in% IUCN_declining), drop = FALSE]
+        }
+        
+      }
+    }
+  }
+  
+  
+  ## richness IUCN
+  # calculate the species richness in each patch
+  LIST_SIM_richness_IUCN <- LIST_SIM_IUCN
+  
+  for (i in 1: length(LIST_SIM_richness_IUCN)) {
+    for (j in 1: length(LIST_SIM_richness_IUCN[[i]])) {
+      for (k in 1: length(LIST_SIM_richness_IUCN[[i]][[j]])){
+        
+        if (!is.na(LIST_SIM_richness_IUCN[[i]][[j]])) {
+          # take the column of each table from column two to column n-1, take their sum, and count how many times their colsum is larger than 0
+          LIST_SIM_richness_IUCN[[i]][[j]][[k]] <- sum(colSums(LIST_SIM_richness_IUCN[[i]][[j]][[k]]) > 0)
+        }
+        
+      }
+    }
+  }
+  
+  
+  for (i in 1:length(LIST_SIM_richness_IUCN)){
+    for ( j in 1: length(LIST_SIM_richness_IUCN[[i]])) {
+      
+      if (!is.na(LIST_SIM_richness_IUCN[[i]][[j]])) {
+        LIST_SIM_richness_IUCN[[i]][[j]] <- do.call(rbind.data.frame, LIST_SIM_richness_IUCN[[i]][[j]])
+        colnames(LIST_SIM_richness_IUCN[[i]][[j]]) <- "richness_IUCN"
+      }
+    }
+  }
+  
+  
+  ## evenness IUCN
+  LIST_SIM_evenness_IUCN <- LIST_SIM_IUCN
+  
+  for (i in 1: length(LIST_SIM_evenness_IUCN)) {
+    for (j in 1: length(LIST_SIM_evenness_IUCN[[i]])) {
+      for (k in 1: length(LIST_SIM_evenness_IUCN[[i]][[j]])){
+        
+        if (!is.na(LIST_SIM_evenness_IUCN[[i]][[j]])) {
+          # use the HurlbertPIE function on every table, excluding patch name (column 1) and patch size (column nrow)
+          LIST_SIM_evenness_IUCN[[i]][[j]][[k]] <- paleotree::HurlbertPIE(colSums(LIST_SIM_evenness_IUCN[[i]][[j]][[k]]))
+        } 
+        
+      }
+    }
+  }
+  
+  
+  
+  for (i in 1:length(LIST_SIM_evenness_IUCN)){
+    for ( j in 1: length(LIST_SIM_evenness_IUCN[[i]])) {
+      
+      if (!is.na(LIST_SIM_evenness_IUCN[[i]][[j]])) {
+        LIST_SIM_evenness_IUCN[[i]][[j]] <- do.call(rbind.data.frame, LIST_SIM_evenness_IUCN[[i]][[j]])
+        colnames(LIST_SIM_evenness_IUCN[[i]][[j]]) <- "evenness_IUCN"
+      }
+    }
+  }
+  
+  # scale richness and evenness IUCN
+  LIST_SIM_richness_IUCN_scaled <- LIST_SIM_richness_IUCN
+  
+  for (i in 1:length(LIST_SIM_richness_IUCN_scaled)){
+    for ( j in 1: length(LIST_SIM_richness_IUCN_scaled[[i]])) {
+      
+      if (!is.na(LIST_SIM_richness_IUCN_scaled[[i]][[j]])) {
+        
+        if (var(LIST_SIM_richness_IUCN_scaled[[i]][[j]]$richness_IUCN) == 0) {
+          LIST_SIM_richness_IUCN_scaled[[i]][[j]]$richness_IUCN <- rep(0, length(LIST_SIM_richness_IUCN_scaled[[i]][[j]]$richness_IUCN))
+        } else {
+          LIST_SIM_richness_IUCN_scaled[[i]][[j]]$richness_IUCN <- ((LIST_SIM_richness_IUCN_scaled[[i]][[j]]$richness_IUCN - mean(LIST_SIM_richness_IUCN_scaled[[i]][[j]]$richness_IUCN))/sd(LIST_SIM_richness_IUCN_scaled[[i]][[j]]$richness_IUCN))
+        }
+      }
+    }
+  }
+  
+  
+  
+  LIST_SIM_evenness_IUCN_scaled <- LIST_SIM_evenness_IUCN
+  
+  for (i in 1:length(LIST_SIM_evenness_IUCN_scaled)){
+    for ( j in 1: length(LIST_SIM_evenness_IUCN_scaled[[i]])) {
+      
+      if (!is.na(LIST_SIM_evenness_IUCN_scaled[[i]][[j]])) {
+        
+        if (var(LIST_SIM_evenness_IUCN_scaled[[i]][[j]]$evenness_IUCN) == 0) {
+          LIST_SIM_evenness_IUCN_scaled[[i]][[j]]$evenness_IUCN <- rep(0, length(LIST_SIM_evenness_IUCN_scaled[[i]][[j]]$evenness_IUCN))
+        } else {
+          LIST_SIM_evenness_IUCN_scaled[[i]][[j]]$evenness_IUCN <- ((LIST_SIM_evenness_IUCN_scaled[[i]][[j]]$evenness_IUCN - mean(LIST_SIM_evenness_IUCN_scaled[[i]][[j]]$evenness_IUCN))/sd(LIST_SIM_evenness_IUCN_scaled[[i]][[j]]$evenness_IUCN))
+        }
+      }
+    }
+  }
+  
+  ## finalize
   LIST_SIM_combined <- LIST_SIM_area
   
   for (i in 1:length(LIST_SIM_combined)){
     for ( j in 1: length(LIST_SIM_combined[[i]])) {
       
       if (!is.na(LIST_SIM_combined[[i]][[j]])) {
-        LIST_SIM_combined[[i]][[j]] <- cbind( LIST_SIM_area[[i]][[j]],  
+        LIST_SIM_combined[[i]][[j]] <- cbind( LIST_SIM_area[[i]][[j]],
+                                              LIST_SIM_area_scaled[[i]][[j]],
+                                              LIST_SIM_area_sum[[i]][[j]],
                                               LIST_SIM_richness[[i]][[j]],  
-                                              LIST_SIM_evenness[[i]][[j]])
+                                              LIST_SIM_evenness[[i]][[j]],
+                                              LIST_SIM_richness_scaled[[i]][[j]],
+                                              LIST_SIM_evenness_scaled[[i]][[j]],
+                                              LIST_SIM_richness_IUCN[[i]][[j]],
+                                              LIST_SIM_evenness_IUCN[[i]][[j]],
+                                              LIST_SIM_richness_IUCN_scaled[[i]][[j]],
+                                              LIST_SIM_evenness_IUCN_scaled[[i]][[j]])
         LIST_SIM_combined[[i]][[j]]$simulation_number <- rep(i, # give a number from 1 to 100 
                                                              nrow(LIST_SIM_combined[[i]][[j]]))
         LIST_SIM_combined[[i]][[j]]$study <- rep(names(list_sampled_data[[i]][j]), 
@@ -649,8 +848,32 @@ alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
   LIST_SIM_combined <- na.omit(LIST_SIM_combined)
   
   final <- LIST_SIM_combined
+  final <- final[,-1]
+  colnames(final) <- gsub(".1", "_scaled", colnames(final))
+  final
+  
   #final_twenty <- LIST_SIM_combined
 } # end of the function
+
+
+
+
+# # Optionally set colours using RColorBrewer
+# library(RColorBrewer)
+# cols = brewer.pal(4, "Blues")
+# # Define colour pallete
+# pal = colorRampPalette(c("blue", "red"))
+# # Use the following line with RColorBrewer
+# pal = colorRampPalette(cols)
+# # Rank variable for colour assignment
+# final$order = findInterval(final$mean_patch_area_sc, sort(final$mean_patch_area_sc))
+# # Make plot
+# plot(richness ~ total_patch_area, final, pch=19, col=pal(nrow(final))[final$order])
+
+
+
+
+
 
 
 final_twenty <- alpha_set(list_simulations_twenty)
@@ -658,40 +881,85 @@ final_forty <- alpha_set(list_simulations_forty)
 final_sixty <- alpha_set(list_simulations_sixty)
 final_eighty <- alpha_set(list_simulations_eighty)
 
+final_thirty <- alpha_set(list_simulations_thirty)
+final_fifty <- alpha_set(list_simulations_fifty)
+final_seventy <- alpha_set(list_simulations_seventy)
+
+
 #
 final_twenty$habitat_amount <- rep("twenty_percent", nrow(final_twenty))
 final_forty$habitat_amount <- rep("forty_percent", nrow(final_forty))
 final_sixty$habitat_amount <- rep("sixty_percent", nrow(final_sixty))
 final_eighty$habitat_amount <- rep("eighty_percent", nrow(final_eighty))
 
+final_thirty$habitat_amount <- rep("thirty_percent", nrow(final_thirty))
+final_fifty$habitat_amount <- rep("fifty_percent", nrow(final_fifty))
+final_seventy$habitat_amount <- rep("seventy_percent", nrow(final_seventy))
+
+
 table_analysis <- rbind(final_twenty, 
                         final_forty, 
                         final_sixty, 
-                        final_eighty)
-colnames(table_analysis)[5] <- "dataset_id"
+                        final_eighty,
+                        final_thirty,
+                        final_fifty,
+                        final_seventy)
+
+
+colnames(table_analysis)[13] <- "dataset_id"
 table_analysis <- merge(table_analysis, metadata, by = "dataset_id")
 
+
+write.csv(table_analysis, "table_analysis.csv")
 ##
 ##
-
-
 library(glmmTMB)
 library(effects)
 library(ggeffects)
 
-table_analysis$log10ric <- log10(table_analysis$richness)
-table_analysis$log10_mean_patch_area <- log10(table_analysis$mean_patch_area)
+# table_analysis$log10ric <- log10(table_analysis$richness)
+# table_analysis$log10_mean_patch_area <- log10(table_analysis$mean_patch_area)
 
-model <- glmmTMB(log10ric ~ log10_mean_patch_area * habitat_amount +  taxa +
-                    (1|dataset_id/patch_set_number) +
+model <- glmmTMB(evenness_scaled ~ mean_patch_area_sc + #* habitat_amount + 
+                   (1|habitat_amount) + 
+                   (1|dataset_id/patch_set_number) + #patch set number is the simulated assemblage, from 1 to 100
                     (1|simulation_number), 
                   data = table_analysis, family = "gaussian")
+
+table_analysis$log_rich <- log(table_analysis$richness + 1)
+table_analysis$log_area <- log(table_analysis$total_patch_area)
+
+model <- glmmTMB(log_rich ~ log_area *
+                  mean_patch_area_sc + #* habitat_amount + 
+                   (1|habitat_amount) + 
+                   (1|dataset_id/patch_set_number) + #patch set number is the simulated assemblage, from 1 to 100
+                   (1|simulation_number), 
+                 data = table_analysis, family = "gaussian")
 
 summary(model)
 
 table_analysis$predicted_richness <- predict(model, type = "response")
 
-#plot(allEffects(model), type = "response")
+plot(allEffects(model), type = "response")
+
+
+
+
+
+plot_model <- ggpredict(model, 
+                        c("log_area [all]", "mean_patch_area_sc [-1, 0, 1]" ),
+                        type = "re"
+) 
+
+plot(plot_model) + 
+  labs(
+    x = "log (area)", 
+    y = "log (richness + 1)", 
+    title = ""  ) + 
+  labs(colour = "SD from mean patch size in a scenario")
+
+
+
 
 # check ggplot tutorial here https://aosmith.rbind.io/2018/11/16/plot-fitted-lines/
 
