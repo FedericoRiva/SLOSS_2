@@ -14,6 +14,7 @@ library(iNEXT)
 library(SpadeR)
 library(vegan)
 library(paleotree)
+library(betapart)
 
 # plotting
 library(ggplot2)
@@ -22,7 +23,6 @@ library(ggpubr)
 
 # modeling
 library(glmmTMB)
-library(DHARMa)
 
 # remove scientific notation
 options(scipen=999)
@@ -108,6 +108,16 @@ data <- data[!(data$dataset_label == "Savilaakso_2009" & data$frag_size_num > 25
 
 ## remove site filtering column
 data <- data[,-c(10)]
+
+####
+### download name of species retained
+####
+# species <- as.data.frame(levels(as.factor(data$species)))
+# names(species)[1] <- "scientificName"
+# write.csv(species, "species_taxonomy.csv")
+####
+###
+####
 
 ## label as factor
 data$dataset_label <- as.factor(data$dataset_label)
@@ -874,29 +884,43 @@ alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
 
 
 
-
-
+#alpha
 final_twenty <- alpha_set(list_simulations_twenty)
+final_thirty <- alpha_set(list_simulations_thirty)
 final_forty <- alpha_set(list_simulations_forty)
+final_fifty <- alpha_set(list_simulations_fifty)
 final_sixty <- alpha_set(list_simulations_sixty)
+final_seventy <- alpha_set(list_simulations_seventy)
 final_eighty <- alpha_set(list_simulations_eighty)
 
-final_thirty <- alpha_set(list_simulations_thirty)
-final_fifty <- alpha_set(list_simulations_fifty)
-final_seventy <- alpha_set(list_simulations_seventy)
+#_beta
+final_twenty_beta <- beta_set(list_simulations_twenty)
+final_thirty_beta <- beta_set(list_simulations_thirty)
+final_forty_beta <- beta_set(list_simulations_forty)
+final_fifty_beta <- beta_set(list_simulations_fifty)
+final_sixty_beta <- beta_set(list_simulations_sixty)
+final_seventy_beta <- beta_set(list_simulations_seventy)
+final_eighty_beta <- beta_set(list_simulations_eighty)
 
-
-#
+# add scenario
 final_twenty$habitat_amount <- rep("twenty_percent", nrow(final_twenty))
+final_thirty$habitat_amount <- rep("thirty_percent", nrow(final_thirty))
 final_forty$habitat_amount <- rep("forty_percent", nrow(final_forty))
+final_fifty$habitat_amount <- rep("fifty_percent", nrow(final_fifty))
 final_sixty$habitat_amount <- rep("sixty_percent", nrow(final_sixty))
+final_seventy$habitat_amount <- rep("seventy_percent", nrow(final_seventy))
 final_eighty$habitat_amount <- rep("eighty_percent", nrow(final_eighty))
 
-final_thirty$habitat_amount <- rep("thirty_percent", nrow(final_thirty))
-final_fifty$habitat_amount <- rep("fifty_percent", nrow(final_fifty))
-final_seventy$habitat_amount <- rep("seventy_percent", nrow(final_seventy))
+final_twenty_beta$habitat_amount <- rep("twenty_percent", nrow(final_twenty_beta))
+final_thirty_beta$habitat_amount <- rep("thirty_percent", nrow(final_thirty_beta))
+final_forty_beta$habitat_amount <- rep("forty_percent", nrow(final_forty_beta))
+final_fifty_beta$habitat_amount <- rep("fifty_percent", nrow(final_fifty_beta))
+final_sixty_beta$habitat_amount <- rep("sixty_percent", nrow(final_sixty_beta))
+final_seventy_beta$habitat_amount <- rep("seventy_percent", nrow(final_seventy_beta))
+final_eighty_beta$habitat_amount <- rep("eighty_percent", nrow(final_eighty_beta))
 
 
+# bring together
 table_analysis <- rbind(final_twenty, 
                         final_forty, 
                         final_sixty, 

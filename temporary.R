@@ -39,23 +39,10 @@ IUCN_declining <- gsub(" ", ".", IUCN_declining)
 ###
 
 
-library(betapart)
-prova <- c(1,1,1,1,1,1,1,0,0,0,0,0)
-beta.multi(prova)
 
 
 
-
-
-
-
-
-
-
-
-###
-
-#object <- list_simulations_ten
+### FUNCTION FOR ALPHA DIVERSITY
 
 alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
   
@@ -405,6 +392,173 @@ alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
   #final_twenty <- LIST_SIM_combined
 } # end of the function
   
+
+### FUNCTION FOR BETA DIVERSITY
+
+beta_set <-function(object){
+  LIST_SIM <- list()
+  for (i in 1:100) {LIST_SIM[[i]] <- object}
+  
+  # merge the simulated sets of patches with the simulated assemblages in each patch
+  for (i in 1: length(LIST_SIM)) {
+    for (j in 1: length(LIST_SIM[[i]])) {
+      for (k in 1: length(LIST_SIM[[i]][[j]])){
+        
+        if (length(LIST_SIM[[i]][[j]]) > 1) {
+          
+          LIST_SIM[[i]][[j]][[k]] <- merge(LIST_SIM[[i]][[j]][[k]], 
+                                           list_sampled_data[[i]][j][[1]],
+                                           by = "study_and_patch")
+          
+        } else  {
+          
+          LIST_SIM[[i]][[j]] <- NA
+        }
+      }
+    }
+  }
+  
+  
+  
+  for (i in 1: length(LIST_SIM)) {
+    for (j in 1: length(LIST_SIM[[i]])) {
+      for (k in 1: length(LIST_SIM[[i]][[j]])){
+        
+        if (length(LIST_SIM[[i]][[j]]) > 1) {
+          
+          LIST_SIM[[i]][[j]][[k]] <- LIST_SIM[[i]][[j]][[k]][,2:(ncol(LIST_SIM[[i]][[j]][[k]])-1)]
+          
+        } 
+      }
+    }
+  }
+  
+  
+  ## for each sets of patches, transform multiple rows into a single row based on their sum
+  
+  for (i in 1: length(LIST_SIM)) {
+    for (j in 1: length(LIST_SIM[[i]])) {
+      for (k in 1: length(LIST_SIM[[i]][[j]])){
+        
+        if (!is.na(LIST_SIM[[i]][[j]])) {
+          LIST_SIM[[i]][[j]][[k]] <- as.data.frame(t(colSums(as.data.frame(LIST_SIM[[i]][[j]][k]))))
+          
+        }
+      }
+    }
+  }
+  
+  # transform multiple sets of patches in a scenario into a single table
+  
+  for (i in 1: length(LIST_SIM)) {
+    for (j in 1: length(LIST_SIM[[i]])) {
+      
+      if (!is.na(LIST_SIM[[i]][[j]])) {
+        LIST_SIM[[i]][[j]] <- do.call(rbind, LIST_SIM[[i]][[j]])
+        
+      }
+    }
+  }
+  
+  
+  
+  # Ruzika beta div (abundance)
+  LIST_SIM_RUZI <- LIST_SIM
+  
+  for (i in 1: length(LIST_SIM_RUZI)) {
+    for (j in 1: length(LIST_SIM_RUZI[[i]])) {
+      
+      if (!is.na(LIST_SIM_RUZI[[i]][[j]])) {
+        LIST_SIM_RUZI[[i]][[j]] <- beta.multi.abund(LIST_SIM[[i]][[j]], index.family="ruzicka")
+      }
+    }
+  }
+  
+  
+  # Jaccard beta diversity
+  LIST_SIM_JAC <- LIST_SIM
+  
+  for (i in 1: length(LIST_SIM_JAC)) {
+    for (j in 1: length(LIST_SIM_JAC[[i]])) {
+      
+      if (!is.na(LIST_SIM_JAC[[i]][[j]])) {
+        LIST_SIM_JAC[[i]][[j]][LIST_SIM_JAC[[i]][[j]] > 0] <- 1 
+        LIST_SIM_JAC[[i]][[j]] <- beta.multi(LIST_SIM_JAC[[i]][[j]], index.family="jaccard")    
+        
+      }
+    }
+  }
+  
+  
+  ## convert into dataframes
+  for (i in 1: length(LIST_SIM_RUZI)) {
+    for (j in 1: length(LIST_SIM_RUZI[[i]])) {
+      
+      if (!is.na(LIST_SIM_RUZI[[i]][[j]])) {
+        LIST_SIM_RUZI[[i]][[j]] <- as.data.frame(LIST_SIM_RUZI[[i]][[j]])
+      }
+    }
+  }
+  
+  for (i in 1: length(LIST_SIM_JAC)) {
+    for (j in 1: length(LIST_SIM_JAC[[i]])) {
+      
+      if (!is.na(LIST_SIM_JAC[[i]][[j]])) {
+        LIST_SIM_JAC[[i]][[j]] <- as.data.frame(LIST_SIM_JAC[[i]][[j]])
+      }
+    }
+  }
+  
+  ## add simulation and dataset number
+  for (i in 1: length(LIST_SIM_RUZI)) {
+    for (j in 1: length(LIST_SIM_RUZI[[i]])) {
+      
+      if (!is.na(LIST_SIM_RUZI[[i]][[j]])) {
+        LIST_SIM_RUZI[[i]][[j]]$simulation <- i
+        LIST_SIM_RUZI[[i]][[j]]$dataset <- levels(as.factor(data$dataset_label))[j]
+        LIST_SIM_RUZI[[i]][[j]]$dataset_and_sim <- paste(LIST_SIM_RUZI[[i]][[j]]$dataset,LIST_SIM_RUZI[[i]][[j]]$simulation)
+      }
+    }
+  }
+  
+  for (i in 1: length(LIST_SIM_JAC)) {
+    for (j in 1: length(LIST_SIM_JAC[[i]])) {
+      
+      if (!is.na(LIST_SIM_JAC[[i]][[j]])) {
+        LIST_SIM_JAC[[i]][[j]]$simulation <- i
+        LIST_SIM_JAC[[i]][[j]]$dataset <- levels(as.factor(data$dataset_label))[j]
+        LIST_SIM_JAC[[i]][[j]]$dataset_and_sim <- paste(LIST_SIM_JAC[[i]][[j]]$dataset,LIST_SIM_JAC[[i]][[j]]$simulation)
+        
+      }
+    }
+  }
+  
+  ## transform lists in tables
+  for (i in 1: length(LIST_SIM_RUZI)) {
+    LIST_SIM_RUZI[[i]] <- do.call(rbind, LIST_SIM_RUZI[[i]])
+  }
+  
+  for (i in 1: length(LIST_SIM_JAC)) {
+    LIST_SIM_JAC[[i]] <- do.call(rbind, LIST_SIM_JAC[[i]])
+  }
+  
+  # merge all tables and remove NAs
+  ruzi_table <- na.omit(do.call(rbind, LIST_SIM_RUZI))
+  jac_table <- na.omit(do.call(rbind, LIST_SIM_JAC))
+  
+  table_merged <- merge(jac_table, ruzi_table)
+  table_merged
+}
+
+
+
+
+
+
+
+
+
+
   
 
   
@@ -586,4 +740,162 @@ alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
 
 
 
-(lm(c(1,2,3,4,4) ~c(12,14,15,20,20) + c(1,1,2,2,3)))
+
+
+# beta_set <-function(object){
+# LIST_SIM <- list()
+# for (i in 1:100) {LIST_SIM[[i]] <- object}
+# 
+# # merge the simulated sets of patches with the simulated assemblages in each patch
+# for (i in 1: length(LIST_SIM)) {
+#   for (j in 1: length(LIST_SIM[[i]])) {
+#     for (k in 1: length(LIST_SIM[[i]][[j]])){
+#       
+#       if (length(LIST_SIM[[i]][[j]]) > 1) {
+#         
+#         LIST_SIM[[i]][[j]][[k]] <- merge(LIST_SIM[[i]][[j]][[k]], 
+#                                          list_sampled_data[[i]][j][[1]],
+#                                          by = "study_and_patch")
+#         
+#       } else  {
+#         
+#         LIST_SIM[[i]][[j]] <- NA
+#       }
+#     }
+#   }
+# }
+# 
+# 
+# 
+# for (i in 1: length(LIST_SIM)) {
+#   for (j in 1: length(LIST_SIM[[i]])) {
+#     for (k in 1: length(LIST_SIM[[i]][[j]])){
+#       
+#       if (length(LIST_SIM[[i]][[j]]) > 1) {
+#         
+#         LIST_SIM[[i]][[j]][[k]] <- LIST_SIM[[i]][[j]][[k]][,2:(ncol(LIST_SIM[[i]][[j]][[k]])-1)]
+#             
+#       } 
+#     }
+#   }
+# }
+# 
+# 
+# ## for each sets of patches, transform multiple rows into a single row based on their sum
+# 
+# for (i in 1: length(LIST_SIM)) {
+#   for (j in 1: length(LIST_SIM[[i]])) {
+#     for (k in 1: length(LIST_SIM[[i]][[j]])){
+#       
+#       if (!is.na(LIST_SIM[[i]][[j]])) {
+#         LIST_SIM[[i]][[j]][[k]] <- as.data.frame(t(colSums(as.data.frame(LIST_SIM[[i]][[j]][k]))))
+# 
+#       }
+#     }
+#   }
+# }
+# 
+# # transform multiple sets of patches in a scenario into a single table
+# 
+# for (i in 1: length(LIST_SIM)) {
+#   for (j in 1: length(LIST_SIM[[i]])) {
+#     
+#       if (!is.na(LIST_SIM[[i]][[j]])) {
+#         LIST_SIM[[i]][[j]] <- do.call(rbind, LIST_SIM[[i]][[j]])
+#         
+#     }
+#   }
+# }
+# 
+# 
+# 
+# # Ruzika beta div (abundance)
+# LIST_SIM_RUZI <- LIST_SIM
+# 
+# for (i in 1: length(LIST_SIM_RUZI)) {
+#   for (j in 1: length(LIST_SIM_RUZI[[i]])) {
+# 
+#       if (!is.na(LIST_SIM_RUZI[[i]][[j]])) {
+#         LIST_SIM_RUZI[[i]][[j]] <- beta.multi.abund(LIST_SIM[[i]][[j]], index.family="ruzicka")
+#     }
+#   }
+# }
+# 
+# 
+# # Jaccard beta diversity
+# LIST_SIM_JAC <- LIST_SIM
+# 
+# for (i in 1: length(LIST_SIM_JAC)) {
+#   for (j in 1: length(LIST_SIM_JAC[[i]])) {
+# 
+#       if (!is.na(LIST_SIM_JAC[[i]][[j]])) {
+#         LIST_SIM_JAC[[i]][[j]][LIST_SIM_JAC[[i]][[j]] > 0] <- 1 
+#         LIST_SIM_JAC[[i]][[j]] <- beta.multi(LIST_SIM_JAC[[i]][[j]], index.family="jaccard")    
+#         
+#     }
+#   }
+# }
+# 
+# 
+# ## convert into dataframes
+# for (i in 1: length(LIST_SIM_RUZI)) {
+#   for (j in 1: length(LIST_SIM_RUZI[[i]])) {
+# 
+#       if (!is.na(LIST_SIM_RUZI[[i]][[j]])) {
+#         LIST_SIM_RUZI[[i]][[j]] <- as.data.frame(LIST_SIM_RUZI[[i]][[j]])
+#     }
+#   }
+# }
+# 
+# for (i in 1: length(LIST_SIM_JAC)) {
+#   for (j in 1: length(LIST_SIM_JAC[[i]])) {
+#     
+#     if (!is.na(LIST_SIM_JAC[[i]][[j]])) {
+#       LIST_SIM_JAC[[i]][[j]] <- as.data.frame(LIST_SIM_JAC[[i]][[j]])
+#     }
+#   }
+# }
+# 
+# ## add simulation and dataset number
+# for (i in 1: length(LIST_SIM_RUZI)) {
+#   for (j in 1: length(LIST_SIM_RUZI[[i]])) {
+#     
+#     if (!is.na(LIST_SIM_RUZI[[i]][[j]])) {
+#       LIST_SIM_RUZI[[i]][[j]]$simulation <- i
+#       LIST_SIM_RUZI[[i]][[j]]$dataset <- levels(as.factor(data$dataset_label))[j]
+#       LIST_SIM_RUZI[[i]][[j]]$dataset_and_sim <- paste(LIST_SIM_RUZI[[i]][[j]]$dataset,LIST_SIM_RUZI[[i]][[j]]$simulation)
+#     }
+#   }
+# }
+# 
+# for (i in 1: length(LIST_SIM_JAC)) {
+#   for (j in 1: length(LIST_SIM_JAC[[i]])) {
+#     
+#     if (!is.na(LIST_SIM_JAC[[i]][[j]])) {
+#       LIST_SIM_JAC[[i]][[j]]$simulation <- i
+#       LIST_SIM_JAC[[i]][[j]]$dataset <- levels(as.factor(data$dataset_label))[j]
+#       LIST_SIM_JAC[[i]][[j]]$dataset_and_sim <- paste(LIST_SIM_JAC[[i]][[j]]$dataset,LIST_SIM_JAC[[i]][[j]]$simulation)
+#       
+#     }
+#   }
+# }
+# 
+# ## transform lists in tables
+# for (i in 1: length(LIST_SIM_RUZI)) {
+#   LIST_SIM_RUZI[[i]] <- do.call(rbind, LIST_SIM_RUZI[[i]])
+# }
+# 
+# for (i in 1: length(LIST_SIM_JAC)) {
+#   LIST_SIM_JAC[[i]] <- do.call(rbind, LIST_SIM_JAC[[i]])
+#   }
+# 
+# # merge all tables and remove NAs
+# ruzi_table <- na.omit(do.call(rbind, LIST_SIM_RUZI))
+# jac_table <- na.omit(do.call(rbind, LIST_SIM_JAC))
+# 
+# table_merged <- merge(jac_table, ruzi_table)
+# table_merged
+# }
+# 
+# 
+# prova <- beta_set(list_simulations_ninety)
