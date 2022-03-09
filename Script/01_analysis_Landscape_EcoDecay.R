@@ -44,32 +44,6 @@ data$dataset_label <- as.factor(data$dataset_label)
 # open metadata from original paper, including effort
 metadata_original = fread("C:\\Users\\feder\\OneDrive\\Desktop\\Riva Fahrig SLOSS #2\\data\\FragSAD_metadata_original.csv", header = TRUE)
 
-### 
-### INSPECTION OF PREDICTS DATASETS; NOT NECESSARY, KEEP FOR NOW
-###
-
-# # open metadata PREDICTS, for effort measures of six studies not in FragSAD
-# metadata_PREDICTS = fread("C:\\Users\\feder\\OneDrive\\Desktop\\landscape empirical comparisons\\PREDICTS 2016\\database\\sites.csv", header = TRUE)
-# 
-# 
-# # identify six studies from PREDICTS, using the difference in study_ID between the original 117 FragSAD studies and the 123 used for Nature paper
-# PREDICTS_studies <- (setdiff(levels(as.factor(data$dataset_label)), levels(as.factor(metadata_original$refshort))))
-# 
-# # inspect the PREDICTS studies for effort
-# PREDICTS_studies_Source_ID <- c("JD1_2010__Caceres",
-#                                 "CC1_2007__Ewers",
-#                                 "SC1_2013__Fernandez", # two datasets in one study, urban and rural fragments for micromammals
-#                                 "HZ1_2013__Garmendia",
-#                                 "SC1_2011__Stouffer")
-# metadata_PREDICTS <- metadata_PREDICTS[metadata_PREDICTS$Source_ID %in% PREDICTS_studies_Source_ID]
-# metadata_PREDICTS <- subset(metadata_PREDICTS, Study_name !="Chilean plants") # remove dataset based on presence/absence data
-# metadata_PREDICTS[283:288, 1] <- "SC1_2013__Fernandez_a" # Chase et al split the original Fernandez dataset in two because patches were sampled in different environments
-# metadata_PREDICTS <- metadata_PREDICTS[, c(1, 16, 26, 27, 28)]
-# metadata_PREDICTS$area_ha <- metadata_PREDICTS$Habitat_patch_area_square_metres/10000
-# 
-# ## check the patches included in Chase et al.
-# test_patches <- unique(data[, 1:3])
-
 # open table compiled by FR while re-assessing the papers
 papers_reassessment = fread("C:\\Users\\feder\\OneDrive\\Desktop\\Riva Fahrig SLOSS #2\\data\\papers_reassessment.csv", header = TRUE)
 papers_reassessment_filter <- papers_reassessment[,c(2,3)]
@@ -108,16 +82,6 @@ data <- data[!(data$dataset_label == "Savilaakso_2009" & data$frag_size_num > 25
 
 ## remove site filtering column
 data <- data[,-c(10)]
-
-####
-### download name of species retained
-####
-# species <- as.data.frame(levels(as.factor(data$species)))
-# names(species)[1] <- "scientificName"
-# write.csv(species, "species_taxonomy.csv")
-####
-###
-####
 
 ## label as factor
 data$dataset_label <- as.factor(data$dataset_label)
@@ -921,21 +885,23 @@ final_eighty_beta$habitat_amount <- rep("eighty_percent", nrow(final_eighty_beta
 
 
 # bring together
-table_analysis <- rbind(final_twenty, 
-                        final_forty, 
-                        final_sixty, 
-                        final_eighty,
-                        final_thirty,
-                        final_fifty,
-                        final_seventy)
-
+table_analysis <- rbind(final_twenty, final_thirty,
+                        final_forty, final_fifty,
+                        final_sixty, final_seventy,
+                        final_eighty)
 
 colnames(table_analysis)[13] <- "dataset_id"
 table_analysis <- merge(table_analysis, metadata, by = "dataset_id")
 
-
 write.csv(table_analysis, "table_analysis.csv")
 ##
+table_analysis_beta <- rbind(final_twenty_beta, final_thirty_beta,
+                        final_forty_beta, final_fifty_beta,
+                        final_sixty_beta, final_seventy_beta,
+                        final_eighty_beta)
+
+write.csv(table_analysis_beta, "table_analysis_beta.csv")
+
 ##
 library(glmmTMB)
 library(effects)
