@@ -1,2 +1,4 @@
 # SLOSS_2
-Riva and Fahrig, second postdoc project
+Riva and Fahrig
+Small patches are disproportionately important for biodiversity conservation, despite ecosystem decay 
+In review
