@@ -1,6 +1,3 @@
-# Riva and Fahrig 2022
-# Ecosystem decay across sets of patches
-
 # prepare data
 library(tidyr)
 library(data.table)
