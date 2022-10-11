@@ -1,3 +1,10 @@
+# # instal packages with the following code, if necessary
+# install.packages(
+#   "tidyr",
+#   repos = c("http://rstudio.org/_packages",
+#             "http://cran.rstudio.com")
+# )
+
 # prepare data
 library(tidyr)
 library(data.table)
@@ -21,6 +28,10 @@ library(ggpubr)
 # modeling
 library(glmmTMB)
 library(stargazer)
+
+#tabS2
+library(psych)
+
 # remove scientific notation
 options(scipen=999)
 set.seed(654)
@@ -41,7 +52,7 @@ metadata$dataset_id <- as.factor(metadata$dataset_id)
 data$dataset_label <- as.factor(data$dataset_label)
 
 # open table compiled by FR while re-assessing the papers
-papers_reassessment = fread("C:\\Users\\feder\\OneDrive\\Desktop\\Riva Fahrig SLOSS #2\\data\\papers_reassessment.csv", header = TRUE)
+papers_reassessment = fread("Data\\papers_reassessment.csv", header = TRUE)
 papers_reassessment_filter <- papers_reassessment[,c(2,3)]
 
 ## data cleaning 
@@ -299,6 +310,8 @@ for (i in 1:length(list_sampled_data)){
   }
 }
 
+
+
 ####################################################################################
 ######### SIMULATE SETS OF PATCHES OF EQUAL HABITAT AMOUNTS
 ####################################################################################
@@ -392,3 +405,49 @@ table_analysis_beta <- rbind(final_twenty_beta, final_thirty_beta,
 # export for script 02_models
 write.csv(table_analysis, "Data\\analysis_and_plots\\table_analysis.csv")
 write.csv(table_analysis_beta, "Data\\analysis_and_plots\\table_analysis_beta.csv")
+
+# generate table s2
+tab_set_twenty <- properties_set(list_simulations_twenty)
+tab_set_thirty <- properties_set(list_simulations_thirty)
+tab_set_forty <- properties_set(list_simulations_forty)
+tab_set_fifty <- properties_set(list_simulations_fifty)
+tab_set_sixty <- properties_set(list_simulations_sixty)
+tab_set_seventy <- properties_set(list_simulations_seventy)
+tab_set_eighty <- properties_set(list_simulations_eighty)
+
+# add scenario label
+tab_set_twenty$habitat_amount <- rep("twenty_percent", nrow(tab_set_twenty))
+tab_set_thirty$habitat_amount <- rep("thirty_percent", nrow(tab_set_thirty))
+tab_set_forty$habitat_amount <- rep("forty_percent", nrow(tab_set_forty))
+tab_set_fifty$habitat_amount <- rep("fifty_percent", nrow(tab_set_fifty))
+tab_set_sixty$habitat_amount <- rep("sixty_percent", nrow(tab_set_sixty))
+tab_set_seventy$habitat_amount <- rep("seventy_percent", nrow(tab_set_seventy))
+tab_set_eighty$habitat_amount <- rep("eighty_percent", nrow(tab_set_eighty))
+
+table_set_patches <- rbind(tab_set_twenty, tab_set_thirty,
+                           tab_set_forty, tab_set_fifty,
+                           tab_set_sixty, tab_set_seventy,
+                           tab_set_eighty)
+
+table_set_patches <- table_set_patches[table_set_patches$simulation_number ==1,]
+table_analysis_subset <- table_analysis[table_analysis$simulation_number ==1,]
+write.csv(table_set_patches, "Data\\analysis_and_plots\\table_set_patches.csv")
+
+table_set_patches$scenario <- paste(table_set_patches$study, table_set_patches$habitat_amount)
+table_analysis_subset$scenario <- paste(table_analysis_subset$dataset_id, table_analysis_subset$habitat_amount)
+
+tables2 <- table_set_patches %>% 
+  group_by(scenario) %>% 
+  summarize(mean_number_of_patches = mean(n), sd_number_of_patches = sd(n),
+            area_largest_patch = mean(max), sd_area_largest_patch = sd(max),
+            area_smallest_patch = mean(min), sd_area_smallest_patch = sd(min))
+
+tables2bis <- table_analysis_subset %>% 
+  group_by(scenario) %>% 
+  summarize(total_area = mean(total_patch_area), 
+            richness_mean = mean(richness), richness_sd = sd(richness),
+            richness_mean_IUCN = mean(richness_IUCN), richness_sd_IUCN = sd(richness_IUCN))
+
+
+tables2 <- merge(tables2, tables2bis, by = "scenario")
+write.csv(tables2, "Data\\analysis_and_plots\\table_s2.csv")

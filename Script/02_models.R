@@ -38,6 +38,7 @@ alpha = fread("Data\\analysis_and_plots\\table_analysis.csv", header = TRUE)
 beta = fread("Data\\analysis_and_plots\\table_analysis_beta.csv", header = TRUE)
 ##
 
+
 # number of species and patches in the final dataset analyzed
 # data = fread("Data\\fragSAD_predicts_ewers.csv", header = TRUE)
 # data_final <- data[data$dataset_label %in% levels(as.factor(alpha$dataset_id)), ]
@@ -101,6 +102,14 @@ for(i in 1:length(alpha_plot_decl)){
 alpha_plot_decl <- Filter(Negate(anyNA),alpha_plot_decl)
 alpha_plot_decl <- do.call(rbind, alpha_plot_decl)
 alpha_plot_decl$log_rich_IUCN <- log2(alpha_plot_decl$richness_IUCN+0.1)
+
+
+####################################################################################
+######### PROPERTIES OF SIMULATED SETS OF PATCHES (table S2)
+####################################################################################
+
+table_s2_data <- alpha[alpha$simulation_number == 1]
+
 
 ########################
 ## MODELS
@@ -207,4 +216,26 @@ model_frag <- glmmTMB(formula = log_rich ~ mean_patch_area_sc + (1|dataset_id),
 model_SAR <- glmmTMB(formula = log_rich ~ log_area + mean_patch_area_sc + (1|dataset_id),
                       data   = alpha_plot, family = "gaussian", control = glmmTMBControl(parallel = 10))
 
+summary(model_SAR)
 
+# posthoc analyses
+posthoc = fread("Data\\posthoc_analysis.csv", header = TRUE)
+posthoc <- posthoc[,c(1,4,5,7)]
+
+posthoc <- merge(posthoc, alpha_plot, by = "dataset_id")
+
+
+
+
+model_richness_fly <- glmmTMB(log_rich ~  0+ mean_patch_area_log * fly  + (mean_patch_area_log|dataset_id/habitat_amount),# +
+                                  data = posthoc, family = "gaussian", control = glmmTMBControl(parallel = 10))
+
+model_richness_het <- glmmTMB(log_rich ~  0+ mean_patch_area_log * heterogeneity  + (mean_patch_area_log|dataset_id/habitat_amount),# +
+                              data = posthoc, family = "gaussian", control = glmmTMBControl(parallel = 10))
+
+model_richness_ext <- glmmTMB(log_rich ~  0+ mean_patch_area_log * extent  + (mean_patch_area_log|dataset_id/habitat_amount),# +
+                              data = posthoc, family = "gaussian", control = glmmTMBControl(parallel = 10))
+
+# plot(allEffects(model_richness_fly), type = "response")
+# plot(allEffects(model_richness_het), type = "response")
+# plot(allEffects(model_richness_ext), type = "response")

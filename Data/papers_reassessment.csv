@@ -1,0 +1,124 @@
+row_id,dataset_label,included,reason_omission,patches_removed,notes
+1,Aizen_1994,1,NA,0,
+3,Baldi_1999,1,NA,0,
+4,Baz_1995,1,NA,0,
+5,Bell_2006_a,1,NA,0,remove arbitrarily assigned 1100 ha patch
+6,Bell_2006_b,1,NA,0,remove arbitrarily assigned 1100 ha patch
+7,Benedick_2006,1,NA,0,remove arbitrarily assigned 100.000 ha control
+9,Berg_1997,1,NA,0,remove arbitrarily assigned 1000 ha control
+10,Bernard_2007,1,NA,0,remove arbitrarily assigned 750 ha control
+11,Bolger_1997,1,NA,0,remove arbitrarily assigned 1000 ha patch
+14,Bragagnolo_2007,1,NA,1,remove 9400 ha control > 90% HA
+15,Brosi_2009,1,NA,0,
+16,Cabrera-Guzman_2012,1,NA,0,remove arbitrarily assigned 700 ha control
+19,Carneiro_2016,1,NA,0,
+20,Cayuela_2006,1,NA,0,
+23,Dami_2012,1,NA,0,
+24,Dauber_2006,1,NA,0,
+25,Davies_2003,1,NA,0,remove arbitrarily assigned 1000 ha controls
+30,Dickman_1987,1,NA,0,
+35,Edwards_2010,1,NA,0,"dataset listed as plant dataset, it is a bird dataset."
+38,Filgueiras_2011,1,NA,0,
+40,Fujita_2008,1,NA,0,
+41,Lion_2014,1,NA,0,
+42,Gavish_2012_a,1,NA,1,"remove largest patch (> 100 ha), > 90% HA"
+43,Gavish_2012_c,1,NA,1,"remove largest patch (> 100 ha), > 90% HA"
+44,Gavish_2012_b,1,NA,1,"remove largest patch (> 100 ha), > 90% HA"
+45,Gibson_2013,1,NA,0,
+46,Giladi_2011_a,1,NA,1,"remove largest patch (> 100 ha), > 90% HA"
+47,Giladi_2011_c,1,NA,1,"remove largest patch (> 100 ha), > 90% HA"
+48,Giladi_2011_b,1,NA,0,
+52,Guadagnin_2005,1,NA,0,
+54,Henry_2007,1,NA,0,
+55,Horvath_2009,1,NA,0,
+56,Jung_2014,1,NA,0,remove arbitrarily assigned 1000 ha patch
+57,Kappes_2009,1,NA,0,
+59,Knapp_2015_a,1,NA,0,
+60,Knapp_2015_b,1,NA,0,
+62,Lima_2015,1,NA,0,
+64,Manu_2007,1,NA,1,"remove largest patch (> 200.000 ha), > 90% HA"
+65,Martensen_2012,1,NA,0,
+66,McCollin_1993,1,NA,0,
+68,Meyer_2008,1,NA,0,
+69,Montgomery_2014,1,NA,0,
+70,Nemesio_2007,1,NA,0,
+71,Nemesio_2010,1,NA,0,
+73,Nogueira_2016,1,NA,0,remove arbitrarily assigned 10.000 ha patch
+74,Nufio_2009,1,NA,0,
+75,Nyeko_2009,1,NA,0,
+77,Owen_2008,1,NA,0,Could not find the dataset
+80,Pineda_2004,1,NA,0,
+81,Raheem_2009,1,NA,0,
+84,Schnitzler_2008_a,1,NA,0,
+85,Schnitzler_2008_b,1,NA,0,
+86,Silva_2009,1,NA,0,
+88,Silveira_2015,1,NA,0,
+89,Slade_2013,1,NA,0,
+90,Stireman_2014,1,NA,0,
+92,Struebig_2008,1,NA,1,"remove largest patch (> 100.000 ha), > 90% HA"
+96,Ulrich_2016,1,NA,0,
+97,Usher_1998,1,NA,0,
+100,Vulinec_2008,1,NA,0,
+101,Williams_2011,1,NA,0,
+104,Ding_2013,1,NA,0,
+105,Jauker_2019,1,NA,0,
+107,Sridhar_2008,1,NA,0,
+108,Vasconcelos_2006,1,NA,0,remove arbitrarily assigned 1000 ha patch
+109,Aguiar_2012,1,NA,0,
+110,Almeida-Gomes_2014,1,NA,0,remove arbitrarily assigned 7200 ha control
+111,Brosi_2008,1,NA,0,
+112,Jyothi_2015,1,NA,0,
+113,Lambert_2003,1,NA,0,
+114,Lion_2016,1,NA,0,
+115,Savilaakso_2009,1,NA,0,remove arbitrarily assigned 300 ha patch
+116,Wang_2012,1,NA,0,
+117,Kapoor_2008,1,NA,0,
+119,Garmendia_2013,1,NA,0,
+121,Fernandez_2013_a,1,NA,0,
+2,Andresen_2003,0,impossible to compare HA,NA,
+8,Benitez-Malvido_2016,0,impossible to compare HA,NA,data not at the patch level (treatments)
+12,Bossart_2006,0,impossible to compare HA,NA,
+13,Bossart_2016,0,impossible to compare HA,NA,
+17,Cadotte_2002_a,0,impossible to compare HA,NA,
+18,Cadotte_2002_b,0,impossible to compare HA,NA,
+21,Chiarello_1999,0,impossible to compare HA,NA,two continuous forests (20.000 ha) are connected
+22,Cosson_1999,0,impossible to compare HA,NA,data not at the patch level (treatments)
+26,DeLaSancha_2014,0,impossible to compare HA,NA,could potentially be included if calculating a specific HA
+27,Lima_1999_a,0,data not at the patch level (edges vs core),NA,
+28,Lima_1999_b,0,data not at the patch level (edges vs core),NA,
+29,DeSouza_1994,0,impossible to compare HA,NA,
+31,Didham_1999,0,impossible to compare HA,NA,
+32,Dixo_2009,0,impossible to compare HA,NA,data not at the patch level (treatments)
+33,Dominguez-Haydar_2011,0,impossible to compare HA,NA,
+34,Echeverria_2011,0,impossible to compare HA,NA,data not at the patch level (treatments)
+36,Estrada_2002_a,0,impossible to compare HA,NA,data not at the patch level (treatments)
+37,Estrada_2002_b,0,impossible to compare HA,NA,data not at the patch level (treatments)
+39,Fonseca_1990,0,impossible to compare HA,NA,data not at the patch level (treatments)
+49,Giraudo_2008,0,impossible to compare HA,NA,data not at the patch level (treatments)
+50,Goncalves-Souza_2007,0,impossible to compare HA,NA,
+51,Goodman_2000,0,impossible to compare HA,NA,
+53,Halme_1993,0,impossible to compare HA,NA,data not at the patch level (treatments)
+58,Klein_1989,0,impossible to compare HA,NA,data not at the patch level (treatments)
+61,Lasky_2010,0,impossible to compare HA,NA,could potentially be included if calculating a specific HA
+63,Lovei_2000,0,impossible to compare HA,NA,
+67,McIntyre_1995,0,impossible to compare HA,NA,data not at the patch level (treatments)
+72,Neuschulz_2011,0,impossible to compare HA,NA,data not at the patch level (treatments)
+76,Nyelele_2014,0,impossible to compare HA,NA,data not at the patch level (treatments)
+78,Paciencia_2005,0,impossible to compare HA,NA,data not at the patch level (treatments)
+79,Pardini_2004,0,impossible to compare HA,NA,data not at the patch level (treatments)
+82,Rocha_2016,0,impossible to compare HA,NA,
+83,Sam_2014,0,impossible to compare HA,NA,
+87,Silva_2016,0,impossible to compare HA,NA,data not at the patch level (treatments)
+91,Storck-Tonon_2017,0,impossible to compare HA,NA,data not at the patch level (treatments)
+93,Telleria_1995,0,impossible to compare HA,NA,data not at the patch level (treatments)
+94,Tonhasca_2002,0,impossible to compare HA,NA,
+95,Uehara-Prado_2007,0,impossible to compare HA,NA,data not at the patch level (treatments)
+98,Vallan_2000,0,impossible to compare HA,NA,
+99,Vieira_2009,0,impossible to compare HA,NA,data not at the patch level (treatments)
+102,Zartman_2003,0,impossible to compare HA,NA,data not at the patch level (treatments)
+103,Ziter_2013,0,impossible to compare HA,NA,data not at the patch level (treatments); area assigned based on average patch size in the paper
+106,MacNally_2001,0,impossible to compare HA,NA,data not at the patch level (treatments)
+118,Caceres_2010,0,impossible to compare HA,NA,
+120,Stouffer_2011,0,impossible to compare HA,NA,data not at the patch level (treatments)
+122,Fernandez_2013_b,0,impossible to compare HA,NA,
+123,Ewers_2007,0,impossible to compare HA,NA,

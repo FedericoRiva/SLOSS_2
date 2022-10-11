@@ -412,7 +412,6 @@ alpha_set <-function(object){ # object is one of the lists from SETS_PATCHES
   colnames(final) <- gsub(".1", "_scaled", colnames(final))
   final
   
-  #final_twenty <- LIST_SIM_combined
 } # end of the function
   
 ##########################################################
@@ -576,5 +575,106 @@ beta_set <-function(object){
   table_merged <- merge(jac_table, ruzi_table)
   table_merged
 }
+
+##########################################################
+##########################################################
+##########################################################
+## FUNCTION 6
+# properties of sets of patches
+
+properties_set <-function(object){ # object is one of the lists from SETS_PATCHES
+  
+  LIST_SIM <- list()
+  for (i in 1:100) {LIST_SIM[[i]] <- object}
+  
+  # merge the simulated sets of patches with the simulated assemblages in each patch
+  for (i in 1: length(LIST_SIM)) {
+    for (j in 1: length(LIST_SIM[[i]])) {
+      for (k in 1: length(LIST_SIM[[i]][[j]])){
+        
+        if (length(LIST_SIM[[i]][[j]]) > 1) {
+          
+          LIST_SIM[[i]][[j]][[k]] <- merge(LIST_SIM[[i]][[j]][[k]], 
+                                           list_sampled_data[[i]][j][[1]],
+                                           by = "study_and_patch")
+          
+        } else  {
+          
+          LIST_SIM[[i]][[j]] <- NA
+        }
+        
+      }
+    }
+  }
+  
+  # calculate the average patch areas in each set of patches
+  LIST_SIM_area <- LIST_SIM
+  
+  for (i in 1: length(LIST_SIM_area)) {
+    for (j in 1: length(LIST_SIM_area[[i]])) {
+      for (k in 1: length(LIST_SIM_area[[i]][[j]])){
+        
+        if (!is.na(LIST_SIM_area[[i]][[j]])) {
+          
+          LIST_SIM_area[[i]][[j]][[k]] <- psych::describe(LIST_SIM_area[[i]][[j]][[k]][,ncol(LIST_SIM_area[[i]][[j]][[k]])])
+          
+        } 
+        
+      }
+    }
+  }
+  # warnings appears because every list has more than one element, so the !is.na returns multiple TRUE statements when a list is not NA
+  
+  # transform lists into tabels
+  for (i in 1:length(LIST_SIM_area)){
+    for ( j in 1: length(LIST_SIM_area[[i]])) {
+      
+      if (!is.na(LIST_SIM_area[[i]][[j]])) {
+        LIST_SIM_area[[i]][[j]] <- do.call(rbind.data.frame, LIST_SIM_area[[i]][[j]])
+        #colnames(LIST_SIM_area[[i]][[j]]) <- "mean_patch_area"
+      }
+    }
+  }
+  
+  
+  
+  ## finalize
+  LIST_SIM_combined <- LIST_SIM_area
+  
+  for (i in 1:length(LIST_SIM_combined)){
+    for ( j in 1: length(LIST_SIM_combined[[i]])) {
+      
+
+      if (!is.na(LIST_SIM_combined[[i]][[j]])) {
+        LIST_SIM_combined[[i]][[j]] <- cbind( LIST_SIM_area[[i]][[j]] )
+        LIST_SIM_combined[[i]][[j]]$simulation_number <- rep(i, # give a number from 1 to 100 
+                                                             nrow(LIST_SIM_combined[[i]][[j]]))
+        LIST_SIM_combined[[i]][[j]]$study <- rep(names(list_sampled_data[[i]][j]), 
+                                                 nrow(LIST_SIM_combined[[i]][[j]]))
+        
+        LIST_SIM_combined[[i]][[j]]$patch_set_number = 1:nrow(LIST_SIM_combined[[i]][[j]])
+        
+      }
+    }
+  }
+  
+  
+  ## combine all studies in a table for each of the 100 simulations
+  for (i in 1:length(LIST_SIM_combined)){
+     LIST_SIM_combined[[i]] <- do.call(rbind.data.frame, LIST_SIM_combined[[i]])
+  }
+  
+  LIST_SIM_combined <- do.call(rbind, LIST_SIM_combined)
+  LIST_SIM_combined <- na.omit(LIST_SIM_combined)
+  LIST_SIM_combined <- LIST_SIM_combined[complete.cases(LIST_SIM_combined[,c("study","mean")]),]
+  
+  
+  final <- LIST_SIM_combined
+  #final <- final[,-1]
+  #colnames(final) <- gsub(".1", "_scaled", colnames(final))
+  final
+  
+  #final_twenty <- LIST_SIM_combined
+} # end of the function
 
 
